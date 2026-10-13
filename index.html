@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>BlockCraft Pocket</title>
+  <meta name="description" content="A voxel sandbox game for phones: build, mine and explore an endless blocky world.">
+  <meta name="theme-color" content="#1e1e1e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+  <meta name="apple-mobile-web-app-title" content="BlockCraft">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="underwater" class="hidden"></div>
+  <div id="hurt-flash"></div>
+
+  <!-- ============ TITLE SCREEN ============ -->
+  <section id="screen-title" class="screen">
+    <div class="title-top">
+      <div class="logo-wrap">
+        <canvas id="logo"></canvas>
+        <div id="logo-edition">POCKET EDITION</div>
+        <div id="splash">Also try blocks!</div>
+      </div>
+    </div>
+    <div class="title-menu">
+      <button class="mc-btn green big" data-action="play">Play</button>
+      <button class="mc-btn" data-action="settings">Settings</button>
+      <button class="mc-btn" data-action="howto">How to Play</button>
+    </div>
+    <div class="title-corner-buttons">
+      <button class="mc-btn icon-btn" data-action="howto" title="Help">?</button>
+      <button class="mc-btn icon-btn" data-action="fullscreen" title="Fullscreen">&#x26F6;</button>
+    </div>
+    <div class="title-version">BlockCraft Pocket v1.0.0</div>
+    <div class="title-copy">Fan-made game. Not affiliated with Mojang or Microsoft.</div>
+  </section>
+
+  <!-- ============ WORLD SELECT ============ -->
+  <section id="screen-worlds" class="screen dirt hidden">
+    <header class="mc-header">
+      <button class="mc-btn icon-btn back" data-action="back">&lt;</button>
+      <h1>Play</h1>
+      <span></span>
+    </header>
+    <nav class="mc-tabs">
+      <button class="mc-tab active">Worlds</button>
+      <button class="mc-tab" data-action="soon">Friends</button>
+      <button class="mc-tab" data-action="soon">Servers</button>
+    </nav>
+    <div class="worlds-body">
+      <div class="worlds-side">
+        <button class="mc-btn green" data-action="create-new">Create New</button>
+        <button class="mc-btn" data-action="import">Import World</button>
+        <input type="file" id="import-file" accept=".json,application/json" hidden>
+      </div>
+      <div class="worlds-list" id="worlds-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ CREATE WORLD ============ -->
+  <section id="screen-create" class="screen dirt hidden">
+    <header class="mc-header">
+      <button class="mc-btn icon-btn back" data-action="back">&lt;</button>
+      <h1>Create New World</h1>
+      <span></span>
+    </header>
+    <div class="panel-scroll">
+      <div class="mc-panel form">
+        <h2>General</h2>
+        <label class="field">World Name
+          <input id="cw-name" class="mc-input" maxlength="32" value="My World">
+        </label>
+        <div class="field">Default Game Mode
+          <div class="mc-seg" id="cw-mode">
+            <button data-v="survival" class="active">Survival</button>
+            <button data-v="creative">Creative</button>
+          </div>
+        </div>
+        <div class="field">Difficulty
+          <div class="mc-seg" id="cw-diff">
+            <button data-v="peaceful">Peaceful</button>
+            <button data-v="easy">Easy</button>
+            <button data-v="normal" class="active">Normal</button>
+            <button data-v="hard">Hard</button>
+          </div>
+        </div>
+        <h2>Advanced</h2>
+        <label class="field">Seed
+          <input id="cw-seed" class="mc-input" placeholder="Leave blank for random" maxlength="40">
+        </label>
+        <div class="field">World Type
+          <div class="mc-seg" id="cw-type">
+            <button data-v="infinite" class="active">Infinite</button>
+            <button data-v="flat">Flat</button>
+          </div>
+        </div>
+      </div>
+      <button class="mc-btn green big create-go" data-action="create-world">Create</button>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section id="screen-settings" class="screen dirt hidden">
+    <header class="mc-header">
+      <button class="mc-btn icon-btn back" data-action="settings-back">&lt;</button>
+      <h1>Settings</h1>
+      <span></span>
+    </header>
+    <div class="settings-body">
+      <nav class="settings-nav" id="settings-nav">
+        <button class="mc-btn active" data-tab="video">Video</button>
+        <button class="mc-btn" data-tab="controls">Touch</button>
+        <button class="mc-btn" data-tab="audio">Audio</button>
+        <button class="mc-btn" data-tab="storage">Storage</button>
+      </nav>
+      <div class="settings-content" id="settings-content"></div>
+    </div>
+  </section>
+
+  <!-- ============ HOW TO PLAY ============ -->
+  <section id="screen-howto" class="screen dirt hidden">
+    <header class="mc-header">
+      <button class="mc-btn icon-btn back" data-action="back">&lt;</button>
+      <h1>How to Play</h1>
+      <span></span>
+    </header>
+    <div class="panel-scroll">
+      <div class="mc-panel howto">
+        <h2>Moving</h2>
+        <p>Use the arrow pad (or joystick) at the bottom left to walk. Double-tap forward to sprint. Drag anywhere on the right side of the screen to look around.</p>
+        <h2>Jumping, Sneaking &amp; Flying</h2>
+        <p>Tap the jump button to jump. The middle of the arrow pad toggles sneaking. In Creative, double-tap jump to fly, then use the up/down buttons.</p>
+        <h2>Mining &amp; Building</h2>
+        <p>Press and hold on a block to break it. Tap to place the selected block. Tap a TNT block to light it.</p>
+        <h2>Inventory &amp; Crafting</h2>
+        <p>Tap a hotbar slot to select it, and tap the <b>&bull;&bull;&bull;</b> button to open your inventory. In Survival the crafting list shows what you can make from your items.</p>
+        <h2>Survival</h2>
+        <p>Watch your health and hunger. Eat apples (sometimes dropped by leaves) or pumpkin pie by selecting them and tapping. Avoid long falls!</p>
+        <h2>Keyboard</h2>
+        <p>WASD to move, mouse to look, left click to mine, right click to place, Space to jump, Shift to sneak, E for inventory, T for chat, 1&ndash;9 for hotbar, Esc to pause.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LOADING ============ -->
+  <section id="screen-loading" class="screen dirt hidden">
+    <div class="loading-box">
+      <div id="loading-title">Generating world</div>
+      <div class="mc-progress"><div id="loading-bar"></div></div>
+      <div id="loading-tip">Building terrain</div>
+    </div>
+  </section>
+
+  <!-- ============ IN-GAME HUD ============ -->
+  <section id="hud" class="hidden">
+    <div id="debug-info"></div>
+    <div id="chat-log"></div>
+    <div class="hud-top-right">
+      <button class="hud-btn" id="btn-chat" title="Chat"><span class="ic-chat"></span></button>
+      <button class="hud-btn" id="btn-pause" title="Pause"><span class="ic-pause"></span></button>
+    </div>
+    <div id="crosshair"></div>
+
+    <div id="touch-look"></div>
+
+    <div id="dpad" class="touch-ctl">
+      <button class="dp up-left" data-k="ul"></button>
+      <button class="dp up" data-k="up"><i class="arr"></i></button>
+      <button class="dp up-right" data-k="ur"></button>
+      <button class="dp left" data-k="left"><i class="arr"></i></button>
+      <button class="dp center" data-k="sneak"><i class="dot"></i></button>
+      <button class="dp right" data-k="right"><i class="arr"></i></button>
+      <button class="dp down" data-k="down"><i class="arr"></i></button>
+    </div>
+    <div id="joystick" class="touch-ctl hidden"><div id="joy-knob"></div></div>
+
+    <div id="right-ctl" class="touch-ctl">
+      <button class="dp fly-up hidden" id="btn-fly-up"><i class="arr"></i></button>
+      <button class="dp jump" id="btn-jump"><i class="jump-ic"></i></button>
+      <button class="dp fly-down hidden" id="btn-fly-down"><i class="arr"></i></button>
+    </div>
+
+    <div class="hud-bottom">
+      <div id="item-name"></div>
+      <div class="stats-row" id="stats-row">
+        <div id="hearts" class="icon-row"></div>
+        <div id="hunger" class="icon-row right"></div>
+      </div>
+      <div id="xpbar"><div id="xpfill"></div><span id="xplevel"></span></div>
+      <div id="hotbar"></div>
+    </div>
+  </section>
+
+  <!-- ============ PAUSE ============ -->
+  <section id="screen-pause" class="screen overlay hidden">
+    <h1 class="mc-title">Game Menu</h1>
+    <div class="pause-menu">
+      <button class="mc-btn green big" data-action="resume">Resume Game</button>
+      <button class="mc-btn" data-action="settings">Settings</button>
+      <button class="mc-btn" data-action="export">Export World</button>
+      <button class="mc-btn" data-action="save-quit">Save &amp; Quit</button>
+    </div>
+  </section>
+
+  <!-- ============ INVENTORY ============ -->
+  <section id="screen-inventory" class="screen overlay hidden">
+    <div class="inv-window mc-panel">
+      <div class="inv-head">
+        <span id="inv-title">Inventory</span>
+        <button class="close-x" data-action="close-inv">&times;</button>
+      </div>
+      <div class="inv-body" id="inv-body"></div>
+    </div>
+  </section>
+
+  <!-- ============ DEATH ============ -->
+  <section id="screen-death" class="screen overlay red hidden">
+    <h1 class="mc-title">You died!</h1>
+    <p id="death-msg">Score: 0</p>
+    <div class="pause-menu">
+      <button class="mc-btn" data-action="respawn">Respawn</button>
+      <button class="mc-btn" data-action="save-quit">Title Screen</button>
+    </div>
+  </section>
+
+  <!-- ============ CHAT ============ -->
+  <section id="screen-chat" class="screen overlay chat hidden">
+    <div class="chat-hist" id="chat-hist"></div>
+    <form id="chat-form" class="chat-bar">
+      <input id="chat-input" class="mc-input" autocomplete="off" placeholder="Type a message or /help">
+      <button class="mc-btn" type="submit">Send</button>
+      <button class="mc-btn icon-btn" type="button" data-action="close-chat">&times;</button>
+    </form>
+  </section>
+
+  <!-- ============ MODAL ============ -->
+  <div id="modal" class="screen overlay hidden">
+    <div class="mc-panel modal-box">
+      <h2 id="modal-title"></h2>
+      <p id="modal-text"></p>
+      <div class="modal-btns">
+        <button class="mc-btn" id="modal-cancel">Cancel</button>
+        <button class="mc-btn green" id="modal-ok">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="js/textures.js"></script>
+  <script src="js/blocks.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
